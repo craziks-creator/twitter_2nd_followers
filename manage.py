@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!env/bin/python
 import flask
 import tweepy
 from flask import Flask, request, session, render_template, redirect, jsonify
