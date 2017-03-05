@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Twitter 2nd Line Followers</h1>
+    <p>
+        Below you will find the screen names (a.k.a. Twitter handles) of the followers of your followers. Next to it, a number of how many of your own followers these users follow.
+        <br>
+        <br>
+        To get the same information in JSON, click <a href="./followers/json">here</a>.
+    </p>
+    <br>
+     <ul id="followers", style="list-style-type:square">
+        {% for follower in followers %}
+            <li id="follower">{{ follower[0] }} -- {{ follower[1] }}</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <div id=footer>
+        Made by Esteban Zacharzewski
+    </div>
+</body>
+</html>
