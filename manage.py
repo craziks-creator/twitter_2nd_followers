@@ -18,6 +18,7 @@ def limit_handled(cursor):
         try:
             yield cursor.next()
         except tweepy.RateLimitError:
+            print 'Rate Limit reached. Waiting 15 min.'
             sleep(15 * 60)
 
 def get_followers(user_id):
@@ -30,11 +31,28 @@ def get_followers(user_id):
             print 'Error! Failed to get list of sub_followers.'
             return []
         except tweepy.RateLimitError:
+            print 'Rate Limit reached. Waiting 15 min.'
             sleep(15 * 60)
         except KeyError:
             print 'Error! No API object found.'
             abort(403)
 
+def get_screen_name(user_id):
+    """Get the screen name of user given their user_id"""
+    while True:
+        try:
+            api = db['api']
+            user =  api.get_user(user_id)
+            return user.screen_name
+        except tweepy.TweepError:
+            print 'Error! Failed to get screen_name of follower.'
+            return ''
+        except tweepy.RateLimitError:
+            print 'Rate Limit reached. Waiting 15 min.'
+            sleep(15 * 60)
+        except KeyError:
+            print 'Error! No API object found.'
+            abort(403)
 
 # FLASK APP
 app = Flask(__name__)
@@ -117,11 +135,10 @@ def get_sub_followers():
 
     # obtain screen names for user ids
     # comment out because it would take too long to run given the rate limit
-    for sub_follower, count in db['sub_followers'].copy().items():
-        screen_name = limit_handled(tweepy.Cursor(api.get_user,
-                                                  id=sub_follower))
-        del db['sub_followers'][sub_follower]
-        db['sub_followers'][screen_name] = count
+    # for sub_follower, count in db['sub_followers'].copy().items():
+    #     screen_name = get_screen_name(sub_follower)
+    #     del db['sub_followers'][sub_follower]
+    #     db['sub_followers'][screen_name] = count
 
     # convert dict of sub_followers to list for html template
     sub_followers = []

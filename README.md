@@ -4,7 +4,7 @@ This repository contains my solutions to the [Growbots coding challenge](https:/
 
 ## Heroku
 
-The app is deployed to Heroku and can be found [here]().
+The app is deployed to Heroku and can be found [here](https://fathomless-taiga-56567.herokuapp.com/).
 
 ## Setup
 
