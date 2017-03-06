@@ -83,8 +83,7 @@ def authorize():
 def verify():
     """Obtain the user's access token and connect to Twitter's API"""
     verifier = request.args.get('oauth_verifier')
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET,
-                               CALLBACK_URL)
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     token = session.get('request_token')
     del session['request_token'] # the authorization request ended
     auth.request_token = token
