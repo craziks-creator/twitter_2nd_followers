@@ -9,5 +9,6 @@ class AppSettings(object):
 
     # CALLBACK_URL
     LOCAL_CALLBACK_URL = 'http://127.0.0.1:5000/verify'
+    CALLBACK_URL = 'https://fathomless-taiga-56567.herokuapp.com/verify'
 
 settings = AppSettings()

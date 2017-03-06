@@ -66,7 +66,8 @@ def index():
 @app.route("/authorize")
 def authorize():
     """Send request token to Twitter's API for app authorization"""
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET,
+                               CALLBACK_URL)
 
     try:
         # twitter's authentication url
@@ -82,12 +83,8 @@ def authorize():
 def verify():
     """Obtain the user's access token and connect to Twitter's API"""
     verifier = request.args.get('oauth_verifier')
-
-    if CALLBACK_URL != '':
-        auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET,
-                                   CALLBACK_URL)
-    else:
-        auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET,
+                               CALLBACK_URL)
     token = session.get('request_token')
     del session['request_token'] # the authorization request ended
     auth.request_token = token
@@ -162,6 +159,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == 'local':
         CALLBACK_URL = settings.LOCAL_CALLBACK_URL
     else:
-        CALLBACK_URL = ''
+        CALLBACK_URL = settings.CALLBACK_URL
 
     app.run(debug=True)
