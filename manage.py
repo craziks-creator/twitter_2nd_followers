@@ -77,12 +77,12 @@ def get_sub_followers():
         abort(403)
 
     db['followers'] = {}
+    # followers = api.followers_ids()
     # build tree of followers and sub_followers
-    for follower in limit_handled(tweepy.Cursor(api.followers_ids).items()):
+    for follower in limit_handled(tweepy.Cursor(api.followers_ids)):
         sub_followers = []
-        for sub_follower in limit_handled(tweepy.Cursor(api.followers_ids, id=follower).items()):
-            # sub_follower_name = sub_follower.screen_name
-            sub_followers.append(sub_follower)
+        # for sub_follower in limit_handled(tweepy.Cursor(api.followers_ids, id=follower)):
+        #     sub_followers.append(sub_follower)
         db['followers'][follower] = sub_followers
 
     db['sub_followers'] = {}
