@@ -1,13 +1,14 @@
 #!env/bin/python
 import sys
 import tweepy
+from app_conf import settings
 from time import sleep
 from flask import Flask, request, session, render_template,\
                   redirect, jsonify, abort
 
 # CONFIG
-CONSUMER_KEY = 'pZae9lin4TMTp2FExsCgRAbsi'
-CONSUMER_SECRET = '9pJFXTsOx9SpQm2Ecb5uWBT8sucka56B3BFUn7NPnS80ux5RoD'
+CONSUMER_KEY = settings.CONSUMER_KEY
+CONSUMER_SECRET = settings.CONSUMER_SECRET
 db = dict() # user tokens could be stored in a database
 
 # UTILS
@@ -19,8 +20,25 @@ def limit_handled(cursor):
         except tweepy.RateLimitError:
             sleep(15 * 60)
 
+def get_followers(user_id):
+    """Get a list of followers from API and handle tweepy errors"""
+    while True:
+        try:
+            api = db['api']
+            return api.followers_ids(user_id)
+        except tweepy.TweepError:
+            print 'Error! Failed to get list of sub_followers.'
+            return []
+        except tweepy.RateLimitError:
+            sleep(15 * 60)
+        except KeyError:
+            print 'Error! No API object found.'
+            abort(403)
+
+
 # FLASK APP
 app = Flask(__name__)
+app.secret_key = settings.SECRET_KEY
 
 @app.route("/")
 def index():
@@ -47,7 +65,11 @@ def verify():
     """Obtain the user's access token and connect to Twitter's API"""
     verifier = request.args.get('oauth_verifier')
 
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    if CALLBACK_URL != '':
+        auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET,
+                                   CALLBACK_URL)
+    else:
+        auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     token = session.get('request_token')
     del session['request_token'] # the authorization request ended
     auth.request_token = token
@@ -76,17 +98,15 @@ def get_sub_followers():
         print 'Error! No API object found.'
         abort(403)
 
-    db['followers'] = {}
-    # followers = api.followers_ids()
     # build tree of followers and sub_followers
-    for follower in limit_handled(tweepy.Cursor(api.followers_ids)):
-        sub_followers = []
-        # for sub_follower in limit_handled(tweepy.Cursor(api.followers_ids, id=follower)):
-        #     sub_followers.append(sub_follower)
+    db['followers'] = {}
+    followers = limit_handled(tweepy.Cursor(api.followers_ids).items())
+    for follower in followers:
+        sub_followers = get_followers(follower)
         db['followers'][follower] = sub_followers
 
-    db['sub_followers'] = {}
     # count sub_followers subscriptions
+    db['sub_followers'] = {}
     for follower, sub_followers in db['followers'].items():
         for sub_follower in sub_followers:
             # sub_follower cannot be user's own follower
@@ -95,46 +115,18 @@ def get_sub_followers():
                 db['sub_followers'][sub_follower] = db['sub_followers'].\
                                                     get(sub_follower, 0) + 1
 
-    # convert dict of sub_followers to list for html
+    # obtain screen names for user ids
+    # comment out because it would take too long to run given the rate limit
+    for sub_follower, count in db['sub_followers'].copy().items():
+        screen_name = limit_handled(tweepy.Cursor(api.get_user,
+                                                  id=sub_follower))
+        del db['sub_followers'][sub_follower]
+        db['sub_followers'][screen_name] = count
+
+    # convert dict of sub_followers to list for html template
     sub_followers = []
     for sub_follower, count in db['sub_followers'].items():
         sub_followers.append((sub_follower, count))
-
-    ##########
-
-    # db['followers'] = {}
-    # # build tree of followers and sub_followers
-    # for follower in limit_handled(tweepy.Cursor(api.followers).items()):
-    #     follower_name = follower.screen_name
-    #     sub_followers = []
-    #     # for sub_follower in limit_handled(tweepy.Cursor(api.followers, screen_name=follower_name).items()):
-    #     #     sub_follower_name = sub_follower.screen_name
-    #     #     sub_followers.append(sub_follower_name)
-    #     db['followers'][follower_name] = sub_followers
-    #
-    # db['sub_followers'] = {}
-    # # count sub_followers subscriptions
-    # for follower, sub_followers in db['followers'].items():
-    #     for sub_follower in sub_followers:
-    #         # sub_follower cannot be user's own follower
-    #         if not sub_follower in db['followers']:
-    #             # update counter
-    #             db['sub_followers'][sub_follower] = db['sub_followers'].\
-    #                                                 get(sub_follower, 0) + 1
-    #
-    # # convert dict of sub_followers to list for html
-    # followers = []
-    # for sub_follower, count in db['sub_followers'].items():
-    #     followers.append((sub_follower, count))
-
-    #########
-
-    # followers_id = api.followers_ids()
-    # followers_obj = [api.get_user(follower) for follower in followers_id]
-    # followers_screen = [follower.screen_name for follower in followers_obj]
-    # followers = []
-    # for follower in followers_screen:
-    #     followers.append((follower, 1))
 
     return render_template('followers.html', followers=sub_followers)
 
@@ -149,6 +141,10 @@ def not_found(error):
     return "Failed to authorize app. Please try again."
 
 if __name__ == '__main__':
-    # encryption key for session
-    app.secret_key = '3faE64iwqJDNBGC5nQ60'
+
+    if len(sys.argv) == 2 and sys.argv[1] == 'local':
+        CALLBACK_URL = settings.LOCAL_CALLBACK_URL
+    else:
+        CALLBACK_URL = ''
+
     app.run(debug=True)
