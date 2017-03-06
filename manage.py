@@ -9,6 +9,10 @@ from flask import Flask, request, session, render_template,\
 # CONFIG
 CONSUMER_KEY = settings.CONSUMER_KEY
 CONSUMER_SECRET = settings.CONSUMER_SECRET
+if len(sys.argv) == 2 and sys.argv[1] == 'local':
+    CALLBACK_URL = settings.LOCAL_CALLBACK_URL
+else:
+    CALLBACK_URL = settings.CALLBACK_URL
 db = dict() # user tokens could be stored in a database
 
 # UTILS
@@ -154,10 +158,4 @@ def not_found(error):
     return "Failed to authorize app. Please try again."
 
 if __name__ == '__main__':
-
-    if len(sys.argv) == 2 and sys.argv[1] == 'local':
-        CALLBACK_URL = settings.LOCAL_CALLBACK_URL
-    else:
-        CALLBACK_URL = settings.CALLBACK_URL
-
     app.run(debug=True)
