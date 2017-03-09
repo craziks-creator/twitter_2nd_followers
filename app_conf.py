@@ -1,8 +1,8 @@
 class AppSettings(object):
 
     # APP TOKENS
-    CONSUMER_KEY = 'pZae9lin4TMTp2FExsCgRAbsi'
-    CONSUMER_SECRET = '9pJFXTsOx9SpQm2Ecb5uWBT8sucka56B3BFUn7NPnS80ux5RoD'
+    CONSUMER_KEY = ''
+    CONSUMER_SECRET = ''
 
     # SESSION
     SECRET_KEY = '3faE64iwqJDNBGC5nQ60' # session encryption key
