@@ -49,7 +49,7 @@ def get_screen_name(user_id):
             user =  api.get_user(user_id)
             return user.screen_name
         except tweepy.TweepError:
-            print 'Error! Failed to get screen_name of follower.'
+            print ('Error! Failed to get screen_name of follower.') 
             return ''
         except tweepy.RateLimitError:
             print ('Rate Limit reached. Waiting 15 min.') 
