@@ -22,7 +22,7 @@ def limit_handled(cursor):
         try:
             yield cursor.next()
         except tweepy.RateLimitError:
-            print 'Rate Limit reached. Waiting 15 min.'
+            print ('Rate Limit reached. Waiting 15 min.') 
             sleep(15 * 60)
 
 def get_followers(user_id):
@@ -32,13 +32,13 @@ def get_followers(user_id):
             api = db['api']
             return api.followers_ids(user_id)
         except tweepy.TweepError:
-            print 'Error! Failed to get list of sub_followers.'
+            print ('Error! Failed to get list of sub_followers.') 
             return []
         except tweepy.RateLimitError:
-            print 'Rate Limit reached. Waiting 15 min.'
+            print ('Rate Limit reached. Waiting 15 min.') 
             sleep(15 * 60)
         except KeyError:
-            print 'Error! No API object found.'
+            print ('Error! No API object found.') 
             abort(403)
 
 def get_screen_name(user_id):
@@ -52,10 +52,10 @@ def get_screen_name(user_id):
             print 'Error! Failed to get screen_name of follower.'
             return ''
         except tweepy.RateLimitError:
-            print 'Rate Limit reached. Waiting 15 min.'
+            print ('Rate Limit reached. Waiting 15 min.') 
             sleep(15 * 60)
         except KeyError:
-            print 'Error! No API object found.'
+            print ('Error! No API object found.') 
             abort(403)
 
 # FLASK APP
@@ -79,7 +79,7 @@ def authorize():
         # set the request token
     	session['request_token'] = auth.request_token
     except tweepy.TweepError:
-    	print 'Error! Failed to get request token'
+    	print ('Error! Failed to get request token') 
 
     return redirect(redirect_url)
 
@@ -95,7 +95,7 @@ def verify():
     try:
     	auth.get_access_token(verifier)
     except tweepy.TweepError:
-    	print 'Error! Failed to get access token.'
+    	print ('Error! Failed to get access token.') 
 
     # connect to API
     api = tweepy.API(auth)
@@ -113,7 +113,7 @@ def get_sub_followers():
     try:
         api = db['api']
     except KeyError:
-        print 'Error! No API object found.'
+        print ('Error! No API object found.') 
         abort(403)
 
     # build tree of followers and sub_followers
